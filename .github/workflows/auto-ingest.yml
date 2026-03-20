@@ -1,0 +1,38 @@
+name: Automated Video Learning
+
+on:
+  schedule:
+    - cron: '0 15 * * *' # 日本時間 毎日 00:00 (15:00 UTC)
+  workflow_dispatch: # 手動実行も可能
+    inputs:
+      video_url:
+        description: '学習させたいYouTube URL (空の場合は自動監視)'
+        required: false
+        default: ''
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm install
+        
+      - name: Install FFmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+        
+      - name: Run Ingest Script
+        env:
+          GOOGLE_GENERATIVE_AI_API_KEY: ${{ secrets.GOOGLE_GENERATIVE_AI_API_KEY }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx ts-node --project tsconfig.json scripts/bulk-ingest.ts ${{ github.event.inputs.video_url }}
