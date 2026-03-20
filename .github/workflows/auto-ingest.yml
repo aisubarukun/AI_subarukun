@@ -1,9 +1,6 @@
 name: Automated Video Learning
 
 on:
-  push:
-    branches:
-      - main
   schedule:
     - cron: '0 15 * * *' # 日本時間 毎日 00:00 (15:00 UTC)
   workflow_dispatch: # 手動実行も可能
@@ -38,4 +35,4 @@ jobs:
           GOOGLE_GENERATIVE_AI_API_KEY: ${{ secrets.GOOGLE_GENERATIVE_AI_API_KEY }}
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-        run: npx ts-node --project tsconfig.json scripts/bulk-ingest.ts ${{ github.event.inputs.video_url }}
+        run: npx tsx scripts/bulk-ingest.ts ${{ github.event.inputs.video_url }}
