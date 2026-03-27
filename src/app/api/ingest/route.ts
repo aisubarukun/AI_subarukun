@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { generateEmbedding } from "@/lib/ai/embedding";
 import { getTranscript, getVideoMetadata, downloadVideo } from "@/lib/video/youtube";
-import { describeImageContent } from "@/lib/ai/gemini";
+import { describeImageContent, analyzeVideoSegments } from "@/lib/ai/gemini";
 import { extractFrames } from "@/lib/video/processor";
 import path from "path";
 import fs from "fs";

@@ -18,7 +18,7 @@ export const googleModel = createGoogleGenerativeAI({
  * 画像の内容を言語化する (Gemini 1.5/2.0 Flash)
  */
 export async function describeImageContent(fileBase64: string, mimeType: string, prompt: string = "この画像の内容（特に板書の文字や図解）を詳しく日本語で説明してください。") {
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-preview" });
 
   const result = await model.generateContent([
     prompt,
@@ -37,30 +37,30 @@ export async function describeImageContent(fileBase64: string, mimeType: string,
  * 動画ファイルをGeminiに直接アップロードして解析する (最新の効率的な方法)
  */
 export async function analyzeVideoSegments(filePath: string, mimeType: string) {
-    // 1. ファイルをアップロード
-    console.log("Uploading video to Gemini File API...");
-    const uploadResult = await fileManager.uploadFile(filePath, {
-        mimeType,
-        displayName: "Math Lecture Video",
-    });
+  // 1. ファイルをアップロード
+  console.log("Uploading video to Gemini File API...");
+  const uploadResult = await fileManager.uploadFile(filePath, {
+    mimeType,
+    displayName: "Math Lecture Video",
+  });
 
-    // 2. アップロード完了まで待機 (動画の場合は必要)
-    let file = await fileManager.getFile(uploadResult.file.name);
-    while (file.state === "PROCESSING") {
-        console.log("Waiting for video processing...");
-        await new Promise((resolve) => setTimeout(resolve, 5000));
-        file = await fileManager.getFile(uploadResult.file.name);
-    }
+  // 2. アップロード完了まで待機 (動画の場合は必要)
+  let file = await fileManager.getFile(uploadResult.file.name);
+  while (file.state === "PROCESSING") {
+    console.log("Waiting for video processing...");
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+    file = await fileManager.getFile(uploadResult.file.name);
+  }
 
-    if (file.state === "FAILED") {
-        throw new Error("Video processing failed at Google's side.");
-    }
+  if (file.state === "FAILED") {
+    throw new Error("Video processing failed at Google's side.");
+  }
 
-    console.log("Video is ready for analysis!");
+  console.log("Video is ready for analysis!");
 
-    // 3. 動画を10秒ごとに解析するように指示 (JSON形式で抽出)
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
-    const prompt = `
+  // 3. 動画を10秒ごとに解析するように指示 (JSON形式で抽出)
+  const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-preview" });
+  const prompt = `
         この動画は数学または物理の授業動画です。
         動画全体を詳しく「10秒ごと」のセグメントに分け、各シーンで黒板に書かれている内容、数式、講師が説明しているポイントを日本語で要約してください。
         
@@ -71,20 +71,20 @@ export async function analyzeVideoSegments(filePath: string, mimeType: string) {
         ]
     `;
 
-    const result = await model.generateContent([
-        {
-            fileData: {
-                mimeType: file.mimeType,
-                fileUri: file.uri,
-            },
-        },
-        { text: prompt },
-    ]);
+  const result = await model.generateContent([
+    {
+      fileData: {
+        mimeType: file.mimeType,
+        fileUri: file.uri,
+      },
+    },
+    { text: prompt },
+  ]);
 
-    const textResponse = result.response.text();
-    // JSON部分を抽出 (Markdownのコードブロックなどを除去)
-    const jsonStr = textResponse.match(/\[[\s\S]*\]/)?.[0] || textResponse;
-    return JSON.parse(jsonStr);
+  const textResponse = result.response.text();
+  // JSON部分を抽出 (Markdownのコードブロックなどを除去)
+  const jsonStr = textResponse.match(/\[[\s\S]*\]/)?.[0] || textResponse;
+  return JSON.parse(jsonStr);
 }
 
 export { genAI, fileManager };

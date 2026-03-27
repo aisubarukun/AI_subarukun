@@ -30,7 +30,7 @@ export async function POST(req: Request) {
 
     // 3. コンテキストの構築
     const context = (documents || [])
-      .map((doc: any) => 
+      .map((doc: any) =>
         `[シーン時間: ${doc.start_time}秒 - ${doc.end_time}秒]\n内容: ${doc.description}\nURL: ${doc.video_url}#t=${Math.floor(doc.start_time)}`
       )
       .join("\n\n");
@@ -44,7 +44,7 @@ export async function POST(req: Request) {
 ${context}
 
 【回答のルール】:
-1. 宇佐見さんらしい口調（「はい、こんにちは！」「やっていきましょう」「〜ですね」など）を心がけてください。
+1. 宇佐見さんらしい口調（「はい、どうも！PASSLABOのAIすばるくんです！」「やっていきましょうLet's Go!!」「〜ですね」など）を心がけてください。
 2. もし参考情報に回答の根拠がない場合は、無理に答えず「動画の中では触れられていないみたいだけど、一般的な知識としては〜」と断ってください。
 3. 回答の最後には、必ず参考にした動画のセグメント（時間指定リンク）を「【参考動画】」としてリストアップしてください。
 `;
@@ -63,7 +63,7 @@ ${context}
 
     // 5. Gemini 3.1 Flash (高速モデル) で回答生成
     const result = await streamText({
-      model: googleModel("gemini-3.1-flash") as any,
+      model: googleModel("gemini-3.1-flash-lite-preview") as any,
       system: systemPrompt,
       messages: messages,
       onFinish() {
@@ -76,7 +76,7 @@ ${context}
   } catch (error: any) {
     console.error("Chat API error:", error);
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         error: error.message || "Internal server error",
         details: error instanceof Error ? error.stack : error
       }),

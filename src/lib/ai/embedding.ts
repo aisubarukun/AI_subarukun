@@ -5,7 +5,7 @@ import { genAI } from "./gemini";
  */
 export async function generateEmbedding(text: string): Promise<number[]> {
   const model = genAI.getGenerativeModel({ model: "gemini-embedding-2-preview" });
-  
+
   try {
     const result = await model.embedContent(text);
     return result.embedding.values;
